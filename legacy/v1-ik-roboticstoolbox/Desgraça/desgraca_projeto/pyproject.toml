@@ -1,0 +1,27 @@
+[project]
+name = "testebraco"
+version = "0.1.0"
+description = ""
+authors = [{name = "Your Name", email = "you@example.com"}]
+requires-python = ">=3.11"
+
+[tool.poetry]
+packages = [{include = "testebraco", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+roboticstoolbox-python = ">=1.1.0"
+swift-sim = ">=1.1.0"
+spatialmath-python = ">=1.1.0"
+spatialgeometry = ">=1.1.0"
+pgraph-python = ">=0.6.2"
+numpy = "<2.0.0"       # ESSENCIAL: O Toolbox quebra no Numpy 2.0+
+websockets = "<11.0"    # ESSENCIAL: Evita o erro de loop no Swift
+matplotlib = "^3.7.0"
+scipy = ">=1.10.0,<1.13.0"
+colored = "<2.0.0"     # Versões 2.x mudaram a API e podem dar erro
+ansitable = ">=0.11.0"
+[dependency-groups]
+dev = [
+    "ipykernel (>=7.2.0,<8.0.0)"
+]
