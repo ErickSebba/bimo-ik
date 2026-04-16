@@ -1,0 +1,55 @@
+Nota do artigo:
+
+ "Algoritmos Genéticos para Determinação da Cinemática Inversa de um 
+  Robô de DoF"
+
+------------------------Introdução------------------------------
+
+ Explica sobre a dificuldade de trabalhar com a cinemática inversa. Cita algumas formas que outros artigos e trabalhos científicos usaram para lidar com a cinemática inversa. (bases de Grobner, inversa filtrada, Paden-Kahan).
+
+Propõem usar uma rede neural artificial (RNA) para realizar os cálculos da cinemática inversa em um braço de 6 DoF.
+
+Por fim, eles explicam sobre o que cada seção aborda.
+
+-----------------------Revisão Bibliográfica--------------------
+
+Explica o que é um algoritmo genético (AG) e como tem sido útil esse tipo de algoritmo na robótica de maneira geral. Ainda no começo da revisão, é citado um robô planar de 3 DoF que utiliza um AG para o controle da cinemática inversa (IK).
+
+Um pouco mais adiante, eles explicam sobre o AG híbrido, que consiste em um AG que "mapeia" o espaço de trabalho e outro que procura a solução dentro do espaço mapeado.
+
+Falam sobre os objetivos para alcançar a pose desejada. Esses objetivos podem ser: energia despendida, o tempo gasto, o número de rotações necessárias, além de minimizar o erro de posição no espaço. Se cada um desses objetivos de otimização 
+atingir valores de ótimo global, então o indivíduo apresentou bons resultados e os valores das vriáveis e constantes devem ser guardadas.
+
+Função Fitness consiste na somatória de todos os objetivos de otimização.
+
+
+----------------------Cinemática do IRB120------------------------
+
+Introduz o modelo de Denavit-Hartenberg (DH) que consiste em uma série de regras de inferência que quando seguidas, mostram onde está a ponta do braço com base nos movimentos de rotação e translação das juntas. Mostra a equação da matriz de transferência homogênea.
+
+
+---------------------- ALGORITMOS GENETICOS PARA DETERMINAÇAO DA CINEMÁTICA INVERSA-------------------
+
+Fala sobre a aplicação do algoritmo genético e os pré-requisitos para usa-lô. Também é comentado sobre a população inicial e os Cromossomos (os parâmetros para a inicialização da população inicial). Na segunda parte desse tópico, eles explicam sobre a função objetivo, que consiste em: minimização do deslocamento angular das juntas, erro de posição final e erro de orientação. Tudo isso serve para encontrar o menor deslocamento angular possível.
+
+Eles explicam sobre distância euclidiana, que é usada para o fitness e as restrições de posicionamento. 
+
+Falam sobre a implementação dos algoritmos genéticose e as ferramentas (Matlab e MathWorks).
+
+Eles separaram indivíduos e suas gerações e coletaram 8 amostras de cada gurpo indivíduo/geração. Após isso alteraram parâmetros do algoritmo genético para obter um resultado mais próximo do esperado. Como esses testes tinham o objetivo de encontrar o menor deslocamento angular possível, eles usaram a mesma pose do braço para os pares indivíduo/geração.
+
+Falam sobre o primeiro teste e mostram os parâmetros e métodos usados na tabela 1. O resultado para poucos indivíduos é uma rápida convergência para a função ótima, porém os erros de posição e de orientação são grandes. Ao aumentarem o número de indivíduos os erros diminuem bastante.
+
+**As vezes o algoritmo fica preso em míınimos locais, e não alcança um valor de ótimo global dentro das restrições.**
+
+Depois de falarem sobre cada mudança feita no algoritmo genético, eles comentam sobre o doping, que consiste em colocar o primeiro indivíduo da população mais próximo da posição desejada. Por fim, com os indivíduos dopados, 100% dos testes convergiram para o mínimo global em tempos relativamente baixos.
+
+**Para a aplicação dos algoritmos usaram um socket TCP/IP ente um GUI do MatLab e o ambiente de simulação da ABB, o RobotStudio.**
+
+Para o cálculo da Cinemática Inversa nesse artigo, eles usaram os métodos heurísticos e rampas de aceleração e desaceleração do robô IRC5. Porém, eles comentam sobre uma técnica que consiste em determinar a trajetória das juntas através de um polinômio de quinta ordem. Esse polinômio dá a posição, velocidade e aceleração de cada junta em cada instante de tempo. Dá a enteder que eles juntaram isso tudo e fizeram o cálculo dos coeficientes do polinômio usando o algoritmo genético.
+
+Por fim, chegamos na simulação em ambiente virtual, onde para provar que o método estocástico consegue achar todas as soluções sozinho, não foi usado o doping na população inicial. Sem o doping, evitaram que o resultado ficasse viciado em uma única posição das juntas. A garra sempre ficava no mesmo lugar, porém por conta do doping, todas as juntas também ficavam na mesma posição. 
+
+Como próximo passo do trabalho, eles comentam sobre a resolução da cinemática inversa considerando um trilho, que seria o sétimo DoF do robô. Falam também sobre outras estratégias de geração de trajetória e controle do braço manipulador.
+
+
