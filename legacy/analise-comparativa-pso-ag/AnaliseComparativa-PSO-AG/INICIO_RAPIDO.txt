@@ -1,0 +1,183 @@
+════════════════════════════════════════════════════════════════════════════════
+  INICIO RAPIDO - Análise Comparativa PSO vs AG vs PSO-DFL
+════════════════════════════════════════════════════════════════════════════════
+
+[PASSO 1] Instalar Dependências
+────────────────────────────────────────────────────────────────────────────────
+
+  Windows:
+  PS> pip install numpy scipy matplotlib seaborn scikit-opt
+
+  Linux/Mac:
+  $ pip install numpy scipy matplotlib seaborn scikit-opt
+
+  Ou use requirements.txt:
+  pip install -r requirements.txt
+
+
+[PASSO 2] Executar a Análise
+────────────────────────────────────────────────────────────────────────────────
+
+  Abra um terminal na pasta do projeto e execute:
+
+  PS> python test_integrated_analysis.py
+
+  Tempo estimado:
+  - Teste rápido (n_runs=3):  5-10 minutos
+  - Padrão (n_runs=20):       30-45 minutos
+  - Máxima precisão (n_runs=50): 60-90 minutos
+
+
+[PASSO 3] Coletar Resultados
+────────────────────────────────────────────────────────────────────────────────
+
+  Após execução, os arquivos estarão em:
+
+  analysis/results/
+  ├── plots/              → Gráficos em PNG (prontos para artigo!)
+  ├── data/               → Dados brutos em JSON
+  └── statistics/         → Análises estatísticas consolidadas
+
+
+[RESULTADO ESPERADO]
+────────────────────────────────────────────────────────────────────────────────
+
+  Você terá:
+
+  [PNG] 4-5 gráficos de qualidade (300 DPI)
+  [JSON] Dados brutos para análise posterior
+  [TXT] Resumo das análises em texto legível
+
+  Exemplo de saída no terminal:
+
+  ════════════════════════════════════════════════════════════════════
+  INTEGRADOR DE ANALISES COMPARATIVAS
+  PSO vs AG vs PSO-DFL
+  ════════════════════════════════════════════════════════════════════
+
+  [1/3] Executando PSO (Cold-Start vs Warm-Start)...
+    Run 1/20 - PSO Cold-Start... OK
+    Run 1/20 - PSO Warm-Start... OK
+    ...
+  [2/3] Executando AG (Cold-Start vs Warm-Start)...
+  [3/3] Executando PSO-DFL (Warm-Start)...
+
+  ════════════════════════════════════════════════════════════════════
+  GERANDO ANALISES E VISUALIZACOES
+  ════════════════════════════════════════════════════════════════════
+
+  [ANALISE 1/5] Convergencia - Erro vs Iteracoes
+  [ANALISE 2/5] Suavidade - Jerk e Variacoes Angulares
+  [ANALISE 3/5] Impacto de Doping (Warm-Start vs Cold-Start)
+  [ANALISE 4/5] Boxplots de Metricas
+  [ANALISE 5/5] Testes Estatisticos (t-Student, ANOVA)
+
+  [OK] TODAS AS ANALISES CONCLUIDAS COM SUCESSO!
+  
+  Resultados salvos em: analysis/results
+
+
+[CUSTOMIZACOES COMUNS]
+────────────────────────────────────────────────────────────────────────────────
+
+  1. Para TESTE RÁPIDO (2-3 minutos):
+     Edite test_integrated_analysis.py, linha ~1107:
+     
+     integrador = IntegradorAnalises(
+         n_runs=3,  ← Mude de 20 para 3
+         path_saidas="analysis/results"
+     )
+
+  2. Para AUMENTAR PRECISÃO (artigo científico):
+     
+     integrador = IntegradorAnalises(
+         n_runs=50,  ← Aumente para 50+
+         path_saidas="analysis/results"
+     )
+
+  3. Para MUDAR TRAJETÓRIA:
+     Edite erick_dan.py, línhas 90-93 (TRAJETORIA)
+
+  4. Para ALTERAR LIMITES ARTICULARES:
+     Edite erick_dan.py, línhas 87-89 (LIMITES_INF, LIMITES_SUP)
+
+
+[ESTRUTURA DE PASTAS]
+────────────────────────────────────────────────────────────────────────────────
+
+  AnaliseComparativa-PSO-AG/
+  ├── test_integrated_analysis.py   ← Execute aqui!
+  ├── erick_dan.py                  ← Customize trajetória
+  ├── README.md                     ← Documentação completa
+  ├── requirements.txt              ← pip install -r requirements.txt
+  │
+  └── analysis/
+      ├── algorithms/
+      │   ├── pso_base.py
+      │   ├── ag_base.py
+      │   └── experimental_setups.py
+      │
+      ├── metrics/
+      │   ├── convergence_metrics.py
+      │   ├── diversity_metrics.py
+      │   ├── smoothness_metrics.py
+      │   └── statistics.py
+      │
+      └── results/  ← SAIDAS AQUI (criada automaticamente)
+          ├── data/
+          ├── plots/
+          └── statistics/
+
+
+[TROUBLESHOOTING]
+────────────────────────────────────────────────────────────────────────────────
+
+  Erro: "ModuleNotFoundError: No module named 'sko'"
+  → pip install scikit-opt
+
+  Erro: "UnicodeDecodeError"
+  → Script só funciona em Windows por enquanto. Se usar Linux/Mac,
+    remova caracteres acentuados dos prints.
+
+  Script muito lento?
+  → Reduza n_runs para 5 ou PSO_ITER para 50 (teste rápido)
+
+  Gráficos não salvam?
+  → Crie a pasta: mkdir -p analysis/results/{data,plots,statistics}
+
+
+[PARA GITHUB]
+────────────────────────────────────────────────────────────────────────────────
+
+  1. Comprima esta pasta:
+     PowerShell: Compress-Archive -Path . -DestinationPath AnaliseComparativa.zip
+     Linux/Mac: zip -r AnaliseComparativa.zip .
+
+  2. Upload para GitHub:
+     - Crie novo repositório em github.com
+     - git init
+     - git add .
+     - git commit -m "Análise PSO vs AG vs PSO-DFL"
+     - git push origin main
+
+  3. Ignore arquivos grandes:
+     - A pasta analysis/results/ foi adicionada ao .gitignore
+     - Use Git LFS para dados se necessário
+
+
+[PRÓXIMOS PASSOS]
+────────────────────────────────────────────────────────────────────────────────
+
+  1. Execute: python test_integrated_analysis.py
+  2. Aguarde conclusão (tempo varia conforme configuração)
+  3. Verifique outputs em analysis/results/plots/
+  4. Copie gráficos PNG para seu artigo LaTeX/Word
+  5. Use dados JSON para tabelas adicionais
+
+════════════════════════════════════════════════════════════════════════════════
+
+Versão: 1.0
+Status: Pronto para usar!
+Data: 2026-04-18
+
+════════════════════════════════════════════════════════════════════════════════

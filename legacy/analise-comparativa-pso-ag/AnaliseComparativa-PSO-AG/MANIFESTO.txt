@@ -1,0 +1,158 @@
+════════════════════════════════════════════════════════════════════════════════
+  MANIFESTO DO PROJETO - Análise Comparativa PSO vs AG vs PSO-DFL
+════════════════════════════════════════════════════════════════════════════════
+
+OBJETIVO
+────────────────────────────────────────────────────────────────────────────────
+Fornecer uma ferramenta científica completa para análise comparativa de três 
+algoritmos de otimização (PSO, AG, PSO-DFL) aplicados ao problema de cinemática 
+inversa em robôs 6-DoF.
+
+STATUS
+────────────────────────────────────────────────────────────────────────────────
+✅ COMPLETO E PRONTO PARA PRODUÇÃO
+- Código testado e validado
+- Documentação completa (README.md)
+- Instruções rápidas (INICIO_RAPIDO.txt)
+- Estrutura organizada para GitHub/publicação
+
+CONTEÚDO MÍNIMO
+────────────────────────────────────────────────────────────────────────────────
+Esta pasta contém TUDO o que você precisa para executar a análise:
+
+  Arquivo Principal:
+  - test_integrated_analysis.py    (975 linhas)
+
+  Dependências Incluídas:
+  - erick_dan.py                   (1121 linhas - cinemática)
+  - analysis/algorithms/           (PSO, AG, PSO-DFL)
+  - analysis/metrics/              (convergência, diversidade, suavidade, stats)
+
+  Configuração:
+  - requirements.txt               (dependências pip)
+  - pyproject.toml                 (config Python)
+  - setup.py                       (instalação)
+
+  Documentação:
+  - README.md                      (guia completo)
+  - INICIO_RAPIDO.txt              (3 passos para executar)
+  - .gitignore                     (exclusões Git)
+
+SEM DEPENDÊNCIAS EXTERNAS DESNECESSÁRIAS
+────────────────────────────────────────────────────────────────────────────────
+❌ Removidos:
+  - Códigos velhos (Codigos_velhos/)
+  - Artigos/notas que não são executáveis
+  - Videos de testes
+  - Outputs de testes anteriores
+  - Pastas vazias ou de uso administrativo
+
+✅ Mantidos:
+  - APENAS o framework de análise funcional
+  - Implementações dos 3 algoritmos
+  - Sistema de métricas e testes estatísticos
+
+TAMANHO E COMPARTILHAMENTO
+────────────────────────────────────────────────────────────────────────────────
+Tamanho da pasta: ~20-30 MB (sem resultados) / ~5-8 MB comprimido
+
+Para GitHub:
+  1. Comprima: Compress-Archive -Path . -DestinationPath AnaliseComparativa.zip
+  2. A pasta analysis/results/ NÃO será enviada (veja .gitignore)
+  3. Usuários geram seus próprios resultados com: python test_integrated_analysis.py
+
+Para colegas (via email/WhatsApp):
+  1. Comprima a pasta
+  2. Envie AnaliseComparativa.zip (~8 MB)
+  3. Eles descompactam e executam: python test_integrated_analysis.py
+  4. Resultados são criados localmente na máquina deles
+
+COMO USAR
+────────────────────────────────────────────────────────────────────────────────
+1. Descompactar a pasta
+2. Instalar dependências: pip install -r requirements.txt
+3. Executar: python test_integrated_analysis.py
+4. Aguardar conclusão (30-60 minutos)
+5. Coletar resultados em analysis/results/
+
+SAÍDAS GERADAS
+────────────────────────────────────────────────────────────────────────────────
+Automaticamente em analysis/results/:
+
+  plots/
+  ├── fig_convergencia.png          → Convergência dos 3 algoritmos
+  ├── fig_erro_rastreamento.png    → Erro por ponto da trajetória
+  ├── fig_boxplot_metricas.png     → Comparação estatística
+  ├── fig_warm_vs_cold.png         → Impacto do doping
+  └── [outras visualizações]
+
+  statistics/
+  ├── relatorio_completo.json      → Resumo de todas as métricas
+  ├── testes_estatisticos.json     → Resultados t-Student, ANOVA
+  ├── metricas_suavidade.json      → Jerk e variações articulares
+  └── resumo_analises.txt          → Texto legível
+
+  data/
+  └── dados_brutos.json            → Todos os históricos de erro/diversidade
+
+PARA PUBLICAÇÃO
+────────────────────────────────────────────────────────────────────────────────
+1. Gráficos em PNG (300 DPI) → Pronto para LaTeX/Word
+2. Tabelas → Extraia de relatorio_completo.json
+3. Testes estatísticos → Use valores de testes_estatisticos.json
+4. Reprodutibilidade → Forneça esta pasta + instruções
+
+PRINCIPAIS FEATURES
+────────────────────────────────────────────────────────────────────────────────
+✅ PSO com warm-start (doping)
+✅ Algoritmo Genético com crossover e mutação
+✅ PSO-DFL (Dynamic Fitness Landscape)
+✅ Múltiplas execuções para rigor estatístico
+✅ Testes t-Student, ANOVA, Wilcoxon
+✅ Métricas de suavidade (jerk, variações angulares)
+✅ Análise de diversidade da população
+✅ Visualizações prontas para artigo
+✅ Dados brutos em JSON para análise posterior
+✅ Documentação completa e instruções rápidas
+
+CHECKLIST FINAL
+────────────────────────────────────────────────────────────────────────────────
+Antes de enviar para GitHub/colegas:
+
+[✓] test_integrated_analysis.py está funcionando
+[✓] Todas as dependências listadas em requirements.txt
+[✓] Pasta analysis/ contém todos os algoritmos
+[✓] README.md com instruções completas
+[✓] INICIO_RAPIDO.txt para início fácil
+[✓] .gitignore para evitar envio de resultados
+[✓] erick_dan.py com trajetória configurada
+[✓] Testado em Windows (rodou com sucesso)
+[✓] Sem arquivos desnecessários
+[✓] Comprimido em ZIP para fácil distribuição
+
+PRÓXIMAS VERSÕES
+────────────────────────────────────────────────────────────────────────────────
+Possíveis melhorias futuras:
+
+- Suporte para Linux/Mac (remover acentos do output)
+- Interface gráfica (Tkinter/PySimpleGUI) para customização sem editar código
+- Integração com WandB para tracking de experimentos
+- Suporte para parallelização (multiprocessing)
+- Exportação direta para LaTeX/Excel
+- Comparação com mais algoritmos (ACO, PSO-FIPS, etc.)
+
+CONTATO & SUPORTE
+────────────────────────────────────────────────────────────────────────────────
+Se houver dúvidas:
+1. Verifique README.md (seção Troubleshooting)
+2. Consulte INICIO_RAPIDO.txt (perguntas frequentes)
+3. Verifique a configuração em test_integrated_analysis.py (main function)
+
+════════════════════════════════════════════════════════════════════════════════
+
+Versão: 1.0
+Data de Criação: 2026-04-18
+Status: ✅ PRONTO PARA USAR E COMPARTILHAR
+Destino: GitHub / Distribuição para pesquisadores
+
+════════════════════════════════════════════════════════════════════════════════

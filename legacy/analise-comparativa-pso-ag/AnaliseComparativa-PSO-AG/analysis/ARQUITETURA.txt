@@ -1,0 +1,276 @@
+"""
+DIAGRAMA DE FLUXO E ARQUITETURA DO FRAMEWORK
+
+Mostra como os componentes se conectam e o pipeline de execução
+"""
+
+DIAGRAMA_FLUXO = """
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     FRAMEWORK DE ANÁLISES COMPARATIVAS                      ║
+║                      PSO vs AG vs PSO-DFL para IK-6DoF                     ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        1. EXECUÇÃO DOS ALGORITMOS                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────┐
+    │  Trajetória      │
+    │  30 pontos XYZ   │
+    └────────┬─────────┘
+             │
+      ┌──────┴───────┐
+      │              │
+    ┌─▼─────────┐  ┌─▼──────────┐
+    │ Cold-Start│  │ Warm-Start │
+    │ (teste 1) │  │ (teste 2)  │
+    └─┬─────────┘  └─┬──────────┘
+      │              │
+      └──────┬───────┘
+             │
+      ┌──────┴─────────────┐
+      │                    │
+   ┌──▼────────┐  ┌───────▼──┐  ┌─────────┐
+   │    PSO    │  │    AG    │  │PSO-DFL  │
+   │ (sci-opt) │  │(próprio) │  │(próprio)│
+   └──┬────────┘  └───────┬──┘  └────┬────┘
+      │                   │           │
+      │ n_runs=10         │           │
+      │ (5-10x cada)      │           │
+      │                   │           │
+      └───────────────────┴───────────┘
+             │
+┌────────────▼────────────────────────────────────────────────────────────────┐
+│                   2. COLETA DE DADOS (10 execuções)                         │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Para cada algoritmo, salvar:
+
+  ✓ Trajetória final: q (n_runs, n_pontos, 6)
+  ✓ Fitness por ponto: (n_runs, n_pontos)
+  ✓ Tempo total: (n_runs,)
+  ✓ Histórico de erro: (n_runs, n_iteracoes)
+  ✓ Histórico de população: (n_runs, n_iteracoes, pop_size, 6)
+  ✓ Histórico de diversidade: (n_runs, n_iteracoes)
+
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│   PSO      │  │    AG      │  │  PSO-DFL   │
+│  [dados]   │  │  [dados]   │  │  [dados]   │
+└────────────┘  └────────────┘  └────────────┘
+     │              │                  │
+     └──────────────┴──────────────────┘
+              │
+┌─────────────▼──────────────────────────────────────────────────────────────┐
+│                    3. ANÁLISES PARALELAS (5 frentes)                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+    3.1 PRESERVAÇÃO DE DIVERSIDADE
+    ─────────────────────────────────
+    Classe: MetricasDiversidade
+    
+    Input:  Histórico de população
+    Output: 
+      ├─ desvio_padrao_populacao()
+      ├─ diversidade_media_iteracao()
+      ├─ taxa_perda_diversidade()
+      ├─ ponto_convergencia_prematura()
+      ├─ diametro_populacao()
+      └─ entropia_populacao()
+    
+    Interpretação:
+      │ Taxa alta de queda → convergência agressiva (PSO usual)
+      │ Convergência prematura < iteração 50 → problema!
+      │ Entropia alta → população dispersa (bom para exploração)
+
+
+    3.2 IMPACTO DO DOPING (WARM-START vs COLD-START)
+    ────────────────────────────────────────────────
+    Classes: Múltiplas (análise cruzada)
+    
+    Input:  Fitness e tempo (cold vs warm)
+    Output: 
+      ├─ teste_t_student(cold_tempo, warm_tempo)
+      ├─ teste_t_student(cold_fitness, warm_fitness)
+      ├─ melhoria_tempo_pct = (T_cold - T_warm) / T_cold × 100
+      └─ melhoria_fitness_pct = idem
+    
+    Resultado esperado:
+      │ PSO:  0.5s → 0.05s (90% mais rápido!)
+      │ AG:   1.2s → 1.1s (8% mais rápido)
+      │ → PSO tem SINERGIA com doping
+
+
+    3.3 MÉTRICAS DE SUAVIDADE
+    ────────────────────────
+    Classe: MetricasSuavidade
+    
+    Input:  Trajetória final q (n_pontos, 6)
+    Output:
+      ├─ soma_variacoes_angulares() = Σ|Δθ|
+      ├─ jerk_articular() = d³θ/dt³
+      ├─ indice_suavidade() ∈ [0,1]
+      ├─ descontinuidade() = pico / média
+      └─ energia_mecanica() ≈ Σ m·v²
+    
+    Interpretação:
+      │ Índice suavidade ~1.0 → perfeito
+      │ Índice suavidade ~0.5 → aceitável
+      │ Índice suavidade <0.3 → inaceitável
+      │ AG geralmente ≥ 0.7 (elitismo suaviza)
+
+
+    3.4 MÉTRICAS DE CONVERGÊNCIA
+    ───────────────────────────
+    Classe: MetricasConvergencia
+    
+    Input:  Histórico de erro (n_iteracoes,)
+    Output:
+      ├─ taxa_convergencia_linear() = % melhoria/iteração
+      ├─ iteracoes_para_tolerancia(5%) = quantas iters?
+      ├─ melhoria_relativa() = (inicial - final)/inicial × 100
+      ├─ velocidade_convergencia_fases() = taxa em 3 fases
+      └─ suavidade_convergencia() ∈ [0,1]
+    
+    Padrão:
+      │ PSO:     convergência RÁPIDA nos primeiros 30 iters
+      │ AG:      convergência LENTA nos primeiros 50 iters
+      │ PSO-DFL: intermediário (melhor balanço?)
+
+
+    3.5 ANÁLISES ESTATÍSTICAS
+    ─────────────────────────
+    Classe: AnalisaEstatistica
+    
+    Input:  Resultados de todos os runs e todas métricas
+    Output:
+      ├─ teste_t_student(PSO, AG) → t, p, significante?
+      ├─ teste_anova(PSO, AG, PSO-DFL) → F, p
+      ├─ teste_wilcoxon() → não-paramétrico
+      ├─ normalidade_shapiro() → distribuição?
+      ├─ size_effect_cohens_d() → d ∈ [-∞, ∞]
+      │    ├─ |d| < 0.2  → negligenciável
+      │    ├─ |d| < 0.5  → pequeno
+      │    ├─ |d| < 0.8  → médio
+      │    └─ |d| ≥ 0.8  → GRANDE
+      └─ intervalo_confianca(95%) → [min, max]
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│                   4. AGREGAÇÃO DOS RESULTADOS                              │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    Cada análise gera um JSON:
+    
+    ├─ statistics/
+    │  ├─ diversidade_preservacao.json
+    │  ├─ impacto_doping.json
+    │  ├─ suavidade_trajetorias.json
+    │  ├─ convergencia.json
+    │  └─ resumo_estatistico.json
+    │
+    └─ plots/
+       ├─ 01_convergencia_comparativa.png
+       ├─ 02_diversidade_preservacao.png
+       ├─ 03_impacto_doping.png
+       └─ 04_boxplots_metricas.png
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│                   5. SAÍDAS PARA ARTIGO CIENTÍFICO                         │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    TABELA 1: Resumo de Métricas
+    ┌──────────────────┬────────┬───────┬──────────┬──────────┐
+    │ Métrica          │  PSO   │  AG   │ PSO-DFL  │  Unidade │
+    ├──────────────────┼────────┼───────┼──────────┼──────────┤
+    │ Erro Final       │ 5.2±2  │ 4.8±1 │ 4.5±1.5  │   mm     │
+    │ Tempo/Ponto      │ 0.35   │ 0.60  │ 0.40     │   seg    │
+    │ Taxa Convg.      │ 2.1    │ 0.8   │ 1.5      │ %/iter   │
+    │ Índice Suavidade │ 0.55   │ 0.78  │ 0.70     │  [0-1]   │
+    │ Jerk             │ 0.12   │ 0.05  │ 0.07     │  rad³    │
+    └──────────────────┴────────┴───────┴──────────┴──────────┘
+    
+    FIGURA 1: Gráfico de Convergência Sobrepostos (3 algoritmos)
+    FIGURA 2: Impacto de Doping (Cold vs Warm)
+    FIGURA 3: Boxplots de Distribuição (com outliers)
+    FIGURA 4: Preservação de Diversidade ao Longo do Tempo
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+MAPA DE CLASSES E FUNÇÕES:
+
+analysis/
+│
+├── algorithms/
+│   ├── PSO_Padrao
+│   │   ├── rodar_cold_start()
+│   │   └── rodar_warm_start()
+│   │
+│   ├── PSO_DFL(PSO_Padrao)
+│   │   ├── _calcular_parametros_adaptativos()
+│   │   └── rodar_warm_start()  [override com modo adaptativo]
+│   │
+│   └── AG_Padrao
+│       ├── _selecao_roleta()
+│       ├── _crossover_aritmetico()
+│       ├── _mutacao_gaussiana()
+│       ├── rodar_cold_start()
+│       └── rodar_warm_start()
+│
+├── metrics/
+│   ├── MetricasDiversidade
+│   │   ├── desvio_padrao_populacao()
+│   │   ├── taxa_perda_diversidade()
+│   │   ├── ponto_convergencia_prematura()
+│   │   ├── diametro_populacao()
+│   │   ├── entropia_populacao()
+│   │   └── relatorio_diversidade()
+│   │
+│   ├── MetricasConvergencia
+│   │   ├── taxa_convergencia()
+│   │   ├── iteracoes_para_tolerancia()
+│   │   ├── melhoria_relativa()
+│   │   ├── suavidade_convergencia()
+│   │   └── relatorio_convergencia()
+│   │
+│   ├── MetricasSuavidade
+│   │   ├── soma_variacoes_angulares()
+│   │   ├── jerk_articular()
+│   │   ├── indice_suavidade()
+│   │   ├── descontinuidade_trajetoria()
+│   │   └── relatorio_suavidade()
+│   │
+│   └── AnalisaEstatistica
+│       ├── teste_t_student()
+│       ├── teste_anova()
+│       ├── teste_wilcoxon()
+│       ├── normalidade_shapiro()
+│       ├── size_effect_cohens_d()
+│       ├── intervalo_confianca()
+│       └── resumo_estatistico_completo()
+│
+└── run_analysis.py
+    └── OrquestradorAnalises
+        ├── analisar_preservacao_diversidade()
+        ├── analisar_impacto_doping()
+        ├── analisar_suavidade_trajetorias()
+        ├── analisar_convergencia()
+        ├── gerar_analises_estatisticas()
+        │
+        ├── plotar_convergencia_comparativa()
+        ├── plotar_diversidade_comparativa()
+        ├── plotar_impacto_doping()
+        ├── plotar_boxplots_metricas()
+        └── gerar_tabela_comparativa()
+
+════════════════════════════════════════════════════════════════════════════════
+"""
+
+print(DIAGRAMA_FLUXO)
+
+# Salvar em arquivo
+with open('ARQUITETURA.txt', 'w', encoding='utf-8') as f:
+    f.write(DIAGRAMA_FLUXO)
+
+print("\n✓ Diagrama de arquitetura salvo em 'ARQUITETURA.txt'")
