@@ -1,0 +1,108 @@
+================================================================================
+ANÁLISE ESTATÍSTICA - TESTES DE SIGNIFICÂNCIA
+================================================================================
+
+
+================================================================================
+MÉTRICA: RMSE Posicao (mm)
+================================================================================
+PSO:     mu=20.049517 sigma=6.912001
+PSO-DFL: mu=18.862400 sigma=3.896040
+AG:      mu=3.573377 sigma=3.758387
+
+ANOVA F-statistic: 29.577188, p-valor: 0.000000
+-> Diferenca SIGNIFICATIVA (p < 0.05)
+
+Testes t-Student (pairwise):
+  PSO vs PSO-DFL: t=0.4488, p=0.658898 
+  PSO vs AG:      t=6.2824, p=0.000006 *
+  PSO-DFL vs AG:  t=8.4729, p=0.000000 *
+
+================================================================================
+MÉTRICA: Suavidade (rad)
+================================================================================
+PSO:     mu=256.492368 sigma=35.295813
+PSO-DFL: mu=336.161661 sigma=44.917819
+AG:      mu=6.503844 sigma=2.533807
+
+ANOVA F-statistic: 244.300779, p-valor: 0.000000
+-> Diferenca SIGNIFICATIVA (p < 0.05)
+
+Testes t-Student (pairwise):
+  PSO vs PSO-DFL: t=-4.1839, p=0.000558 *
+  PSO vs AG:      t=21.1935, p=0.000000 *
+  PSO-DFL vs AG:  t=21.9824, p=0.000000 *
+
+================================================================================
+MÉTRICA: Tempo de Execucao (s)
+================================================================================
+PSO:     mu=1134.554760 sigma=31.955564
+PSO-DFL: mu=1167.829889 sigma=35.942504
+AG:      mu=18.402580 sigma=2.664867
+
+ANOVA F-statistic: 4980.936958, p-valor: 0.000000
+-> Diferenca SIGNIFICATIVA (p < 0.05)
+
+Testes t-Student (pairwise):
+  PSO vs PSO-DFL: t=-2.0756, p=0.052534 
+  PSO vs AG:      t=104.4223, p=0.000000 *
+  PSO-DFL vs AG:  t=95.6762, p=0.000000 *
+
+================================================================================
+MÉTRICA: Taxa de Convergência
+================================================================================
+PSO:     mu=6.785651 sigma=3.552957
+PSO-DFL: mu=6.693483 sigma=2.082633
+AG:      mu=0.199647 sigma=0.352597
+
+ANOVA F-statistic: 22.533689, p-valor: 0.000002
+-> Diferenca SIGNIFICATIVA (p < 0.05)
+
+Testes t-Student (pairwise):
+  PSO vs PSO-DFL: t=0.0671, p=0.947211 
+  PSO vs AG:      t=5.5338, p=0.000030 *
+  PSO-DFL vs AG:  t=9.2230, p=0.000000 *
+
+================================================================================
+MÉTRICA: Jerk Articular (rad^2)
+================================================================================
+PSO:     mu=459.926777 sigma=70.895585
+PSO-DFL: mu=606.188854 sigma=82.960478
+AG:      mu=7.312288 sigma=4.907799
+
+ANOVA F-statistic: 220.576461, p-valor: 0.000000
+-> Diferenca SIGNIFICATIVA (p < 0.05)
+
+Testes t-Student (pairwise):
+  PSO vs PSO-DFL: t=-4.0209, p=0.000802 *
+  PSO vs AG:      t=19.1070, p=0.000000 *
+  PSO-DFL vs AG:  t=21.6187, p=0.000000 *
+
+================================================================================
+TAMANHO DO EFEITO (Cohen's d)
+================================================================================
+
+RMSE Posicao (mm):
+  PSO vs PSO-DFL: d=0.2007
+  PSO vs AG:      d=2.8096
+  PSO-DFL vs AG:  d=3.7892
+
+Suavidade (rad):
+  PSO vs PSO-DFL: d=-1.8711
+  PSO vs AG:      d=9.4780
+  PSO-DFL vs AG:  d=9.8309
+
+Tempo de Execucao (s):
+  PSO vs PSO-DFL: d=-0.9283
+  PSO vs AG:      d=46.6991
+  PSO-DFL vs AG:  d=42.7877
+
+Taxa de Convergência:
+  PSO vs PSO-DFL: d=0.0300
+  PSO vs AG:      d=2.4748
+  PSO-DFL vs AG:  d=4.1247
+
+Jerk Articular (rad^2):
+  PSO vs PSO-DFL: d=-1.7982
+  PSO vs AG:      d=8.5449
+  PSO-DFL vs AG:  d=9.6682
