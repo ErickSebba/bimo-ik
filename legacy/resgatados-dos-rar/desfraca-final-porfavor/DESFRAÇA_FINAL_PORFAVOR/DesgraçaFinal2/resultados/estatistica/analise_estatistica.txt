@@ -1,0 +1,108 @@
+================================================================================
+ANÁLISE ESTATÍSTICA v4.0 — COLD-START UNIVERSAL
+Correção para múltiplos testes: FDR (Benjamini-Hochberg)
+================================================================================
+
+================================================================================
+MÉTRICA: RMSE Posição (mm)
+================================================================================
+PSO:     μ=10.110022  σ=7.018865
+PSO-DFL: μ=19.437191  σ=24.656234
+AG:      μ=2.851534  σ=3.123512
+
+ANOVA  F=2.7985  p=0.078618  → não significativo
+
+Teste t-Student pairwise (p_ajustado FDR):
+  PSO vs PSO-DFL        : t=-1.0915  p_bruto=0.289448  p_adj=0.289448
+  PSO vs AG             : t= 2.8344  p_bruto=0.010994  p_adj=0.014992 *
+  PSO-DFL vs AG         : t= 2.0020  p_bruto=0.060585  p_adj=0.069906
+
+================================================================================
+MÉTRICA: Suavidade (rad)
+================================================================================
+PSO:     μ=247.015295  σ=24.823644
+PSO-DFL: μ=4.226211  σ=1.491017
+AG:      μ=203.399916  σ=14.091497
+
+ANOVA  F=553.6497  p=0.000000  → SIGNIFICATIVO (p<0.05)
+
+Teste t-Student pairwise (p_ajustado FDR):
+  PSO vs PSO-DFL        : t=29.2889  p_bruto=0.000000  p_adj=0.000000 *
+  PSO vs AG             : t= 4.5839  p_bruto=0.000230  p_adj=0.000493 *
+  PSO-DFL vs AG         : t=-42.1676  p_bruto=0.000000  p_adj=0.000000 *
+
+================================================================================
+MÉTRICA: Jerk Articular (rad²)
+================================================================================
+PSO:     μ=422.996853  σ=41.314073
+PSO-DFL: μ=2.500337  σ=1.068815
+AG:      μ=351.129274  σ=27.145468
+
+ANOVA  F=558.6633  p=0.000000  → SIGNIFICATIVO (p<0.05)
+
+Teste t-Student pairwise (p_ajustado FDR):
+  PSO vs PSO-DFL        : t=30.5239  p_bruto=0.000000  p_adj=0.000000 *
+  PSO vs AG             : t= 4.3614  p_bruto=0.000376  p_adj=0.000705 *
+  PSO-DFL vs AG         : t=-38.4991  p_bruto=0.000000  p_adj=0.000000 *
+
+================================================================================
+MÉTRICA: Tempo de Execução (s)
+================================================================================
+PSO:     μ=4.024929  σ=0.029313
+PSO-DFL: μ=4.088880  σ=0.135493
+AG:      μ=9.096695  σ=0.313005
+
+ANOVA  F=1950.8819  p=0.000000  → SIGNIFICATIVO (p<0.05)
+
+Teste t-Student pairwise (p_ajustado FDR):
+  PSO vs PSO-DFL        : t=-1.3839  p_bruto=0.183301  p_adj=0.196394
+  PSO vs AG             : t=-48.3987  p_bruto=0.000000  p_adj=0.000000 *
+  PSO-DFL vs AG         : t=-44.0477  p_bruto=0.000000  p_adj=0.000000 *
+
+================================================================================
+MÉTRICA: Taxa de Convergência
+================================================================================
+PSO:     μ=3.383989  σ=2.864630
+PSO-DFL: μ=0.152856  σ=0.049191
+AG:      μ=1.002145  σ=0.753178
+
+ANOVA  F=8.6324  p=0.001264  → SIGNIFICATIVO (p<0.05)
+
+Teste t-Student pairwise (p_ajustado FDR):
+  PSO vs PSO-DFL        : t= 3.3833  p_bruto=0.003312  p_adj=0.005053 *
+  PSO vs AG             : t= 2.4124  p_bruto=0.026737  p_adj=0.033421 *
+  PSO-DFL vs AG         : t=-3.3756  p_bruto=0.003368  p_adj=0.005053 *
+
+================================================================================
+TAMANHO DO EFEITO (Cohen's d)
+================================================================================
+
+RMSE Posição (mm):
+  PSO vs PSO-DFL: d=-0.4881
+  PSO vs AG:      d= 1.2676
+  PSO-DFL vs AG:  d= 0.8953
+
+Suavidade (rad):
+  PSO vs PSO-DFL: d=13.0984
+  PSO vs AG:      d= 2.0500
+  PSO-DFL vs AG:  d=-18.8579
+
+Jerk Articular (rad²):
+  PSO vs PSO-DFL: d=13.6507
+  PSO vs AG:      d= 1.9505
+  PSO-DFL vs AG:  d=-17.2173
+
+Tempo de Execução (s):
+  PSO vs PSO-DFL: d=-0.6189
+  PSO vs AG:      d=-21.6445
+  PSO-DFL vs AG:  d=-19.6987
+
+Taxa de Convergência:
+  PSO vs PSO-DFL: d= 1.5131
+  PSO vs AG:      d= 1.0789
+  PSO-DFL vs AG:  d=-1.5096
+
+================================================================================
+Total de testes: 15  |  Método: FDR Benjamini-Hochberg
+Interpretação de d: |d|<0.2 trivial | 0.2–0.5 pequeno | 0.5–0.8 médio | >0.8 grande
+================================================================================
