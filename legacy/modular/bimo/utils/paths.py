@@ -1,0 +1,1 @@
+from bimo.config import DIRS

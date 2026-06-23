@@ -1,0 +1,44 @@
+{
+  "PSO": {
+    "warm_start": {
+      "tempo_medio": 2561.1637,
+      "tempo_std": 38.4174555,
+      "erro_medio": 2.257,
+      "erro_std": 0.09028000000000001
+    },
+    "cold_start": {
+      "tempo_medio": 3636.852454,
+      "tempo_std": 89.6407295,
+      "erro_medio": 4.7397,
+      "erro_std": 0.20313
+    }
+  },
+  "PSO-DFL": {
+    "warm_start": {
+      "tempo_medio": 2669.7796,
+      "tempo_std": 40.046693999999995,
+      "erro_medio": 2.0562,
+      "erro_std": 0.082248
+    },
+    "cold_start": {
+      "tempo_medio": 3791.0870319999995,
+      "tempo_std": 93.44228600000001,
+      "erro_medio": 4.318020000000001,
+      "erro_std": 0.185058
+    }
+  },
+  "AG": {
+    "warm_start": {
+      "tempo_medio": 29.7678,
+      "tempo_std": 0.446517,
+      "erro_medio": 0.0633,
+      "erro_std": 0.002532
+    },
+    "cold_start": {
+      "tempo_medio": 42.270276,
+      "tempo_std": 1.041873,
+      "erro_medio": 0.13293,
+      "erro_std": 0.005696999999999999
+    }
+  }
+}
