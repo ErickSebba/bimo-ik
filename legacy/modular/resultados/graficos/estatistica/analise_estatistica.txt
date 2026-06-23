@@ -1,0 +1,7 @@
+=== ANALISE ESTATISTICA (KRUSKAL-WALLIS) ===
+Metrica avaliada: Erro de Rastreamento (mm)
+
+Estatistica H: 140.2447
+Valor-p:       3.5177e-31
+
+Conclusao: Existe diferenca estatisticamente significativa entre os algoritmos (p < 0.05).
