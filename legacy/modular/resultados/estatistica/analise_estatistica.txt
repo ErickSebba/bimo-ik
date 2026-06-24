@@ -1,0 +1,36 @@
+================================================================================
+ANÁLISE ESTATÍSTICA AVANÇADA - VALIDÇÃO DO ROBÔ BIMO
+================================================================================
+
+
+MÉTRICA: RMSE Posição (mm)
+----------------------------------------
+ANOVA -> F-statistic: 42.09788 | p-valor: 0.000000
+Significativo (p < 0.05): SIM
+  t-Test (PSO vs PSO-DFL): p = 0.255234
+  t-Test (PSO vs AG):      p = 0.000000
+  t-Test (PSO-DFL vs AG):  p = 0.000001
+
+MÉTRICA: Suavidade (rad)
+----------------------------------------
+ANOVA -> F-statistic: 453.59427 | p-valor: 0.000000
+Significativo (p < 0.05): SIM
+  t-Test (PSO vs PSO-DFL): p = 0.001139
+  t-Test (PSO vs AG):      p = 0.000000
+  t-Test (PSO-DFL vs AG):  p = 0.000000
+
+MÉTRICA: Tempo de Execução (s)
+----------------------------------------
+ANOVA -> F-statistic: 754281.13178 | p-valor: 0.000000
+Significativo (p < 0.05): SIM
+  t-Test (PSO vs PSO-DFL): p = 0.000000
+  t-Test (PSO vs AG):      p = 0.000000
+  t-Test (PSO-DFL vs AG):  p = 0.000000
+
+MÉTRICA: Jerk Articular (rad^2)
+----------------------------------------
+ANOVA -> F-statistic: 430.28331 | p-valor: 0.000000
+Significativo (p < 0.05): SIM
+  t-Test (PSO vs PSO-DFL): p = 0.003901
+  t-Test (PSO vs AG):      p = 0.000000
+  t-Test (PSO-DFL vs AG):  p = 0.000000
