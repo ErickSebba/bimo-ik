@@ -86,3 +86,58 @@ def config_to_dict(config: ExperimentConfig) -> dict:
 def config_hash(config: ExperimentConfig) -> str:
     canonical = json.dumps(config_to_dict(config), sort_keys=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def config_from_dict(d: dict) -> ExperimentConfig:
+    """Inverse of config_to_dict (used to rebuild a config from manifest.json)."""
+    from ..algorithms.ga import GAParams
+    from ..algorithms.pso import PSOParams
+    from ..fitness.fitness import FitnessWeights
+
+    cells = tuple(
+        Cell(c["algorithm"], c["memory"], c["landscape"]) for c in d["cells"]
+    )
+    trajectories = tuple(
+        TrajectorySpec(
+            name=t["name"],
+            kind=t["kind"],
+            n_points=t["n_points"],
+            start=tuple(t["start"]),
+            end=tuple(t["end"]),
+            quat_start=tuple(t["quat_start"]),
+            quat_end=tuple(t["quat_end"]),
+            corner=tuple(t["corner"]) if t["corner"] is not None else None,
+        )
+        for t in d["trajectories"]
+    )
+    return ExperimentConfig(
+        name=d["name"],
+        cells=cells,
+        trajectories=trajectories,
+        n_runs=d["n_runs"],
+        seed_base=d["seed_base"],
+        max_iter=d["max_iter"],
+        weights=FitnessWeights(**d["weights"]),
+        pso=PSOParams(**d["pso"]),
+        ga=GAParams(**d["ga"]),
+        injection=InjectionParams(**d["injection"]),
+        epsilon_values=tuple(d["epsilon_values"]),
+        report_epsilons=tuple(d["report_epsilons"]),
+        reach_tolerance=d["reach_tolerance"],
+        initial_posture=tuple(d["initial_posture"]),
+    )
+
+
+def config_from_manifest(results_dir) -> ExperimentConfig:
+    """Load the config recorded in a results directory's manifest.json,
+    verifying the stored hash."""
+    from pathlib import Path
+
+    manifest = json.loads((Path(results_dir) / "manifest.json").read_text())
+    config = config_from_dict(manifest["config"])
+    if config_hash(config) != manifest["config_hash"]:
+        raise ValueError(
+            "manifest config_hash mismatch: results were produced by a "
+            "different code/config state"
+        )
+    return config
