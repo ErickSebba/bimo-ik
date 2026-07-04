@@ -187,11 +187,16 @@ def fig_metric_boxplots(
             patch.set_facecolor(style["color"] + "99")
             patch.set_hatch(style["hatch"])
             patch.set_edgecolor(style["color"])
+        short = {"cold": "cold", "injection": "inject.", "persistence": "persist."}
+        labels = []
+        for c in cells:
+            algorithm, memory, landscape = _split(c)
+            label = f"{algorithm.upper()}\n{short[memory]}"
+            if landscape == "adaptive":
+                label += "\n(adapt.)"
+            labels.append(label)
         ax.set_xticks(range(1, len(cells) + 1))
-        ax.set_xticklabels(
-            [cell_style(c)["label"].replace(" ", "\n", 1) for c in cells],
-            fontsize=7,
-        )
+        ax.set_xticklabels(labels, fontsize=7)
         ax.set_title(title, fontsize=10)
         _style_axes(ax)
     fig.suptitle(f"Per-run metrics — {trajectory_name}", y=1.02)
