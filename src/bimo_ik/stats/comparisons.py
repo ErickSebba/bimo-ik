@@ -11,10 +11,15 @@ families of planned pairwise questions are tested explicitly:
   Q3 — landscape effect within each algorithm x memory combination:
        static vs adaptive (5 pairs).
 
-All pairs use Welch t-tests (no equal-variance assumption); p-values are
-corrected with one Benjamini-Hochberg FDR pass per metric family; Cohen's d
-(pooled SD) documents effect sizes. A Kruskal-Wallis check is provided as a
-distribution-free robustness companion for skewed metrics.
+Two inference tracks share the same planned pairs and the same one-BH-FDR-
+pass-per-family policy:
+
+- Welch t-tests + pooled-SD Cohen's d — primary for well-behaved families
+  (kinematic executability, computation).
+- Mann-Whitney U + Cliff's delta with median/IQR summaries — primary for the
+  heavy-tailed families (accuracy, effort), where sd frequently exceeds the
+  mean and mean+-sd/pooled-d are misleading. Kruskal-Wallis over the PSO
+  memory triple accompanies those families as an omnibus check.
 """
 
 from __future__ import annotations
@@ -54,6 +59,26 @@ class Comparison:
     t_stat: float
     p_raw: float
     cohens_d: float
+    p_adj: float | None = None  # filled by adjust_family
+
+
+@dataclass(frozen=True)
+class RankComparison:
+    """Rank-based planned pair: Mann-Whitney U + Cliff's delta, median/IQR."""
+
+    question: str
+    metric: str
+    cell_a: str
+    cell_b: str
+    n_a: int
+    n_b: int
+    median_a: float
+    iqr_a: float
+    median_b: float
+    iqr_b: float
+    u_stat: float
+    p_raw: float
+    cliffs_delta: float
     p_adj: float | None = None  # filled by adjust_family
 
 
@@ -110,8 +135,63 @@ def run_planned_comparisons(
     return comparisons
 
 
-def adjust_family(comparisons: list[Comparison]) -> list[Comparison]:
-    """One Benjamini-Hochberg FDR pass over a whole metric family."""
+def cliffs_delta(x: np.ndarray, y: np.ndarray) -> float:
+    """Cliff's delta: P(x > y) - P(x < y) over all cross-pairs, in [-1, 1].
+
+    Rank-based effect size (equivalent to 2U/(n1*n2) - 1); robust to the
+    heavy tails that make pooled-SD Cohen's d unpredictable.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    diff = x[:, None] - y[None, :]
+    return float((np.sum(diff > 0) - np.sum(diff < 0)) / (len(x) * len(y)))
+
+
+def run_rank_comparisons(
+    values_by_cell: dict[str, np.ndarray], metric: str
+) -> list[RankComparison]:
+    """Mann-Whitney U over the planned pairs, with Cliff's delta.
+
+    Degenerate pairs where every value in both groups is identical (e.g.
+    both cells fully right-censored at the iteration cap) short-circuit to
+    p = 1.0, delta = 0 — "no detectable difference", not NaN.
+    """
+    comparisons = []
+    for question, a, b in planned_pairs(set(values_by_cell)):
+        x = np.asarray(values_by_cell[a], dtype=float)
+        y = np.asarray(values_by_cell[b], dtype=float)
+        if np.ptp(np.concatenate([x, y])) == 0.0:
+            u_stat, p_raw, delta = len(x) * len(y) / 2.0, 1.0, 0.0
+        else:
+            u_stat, p_raw = sps.mannwhitneyu(
+                x, y, alternative="two-sided", method="asymptotic"
+            )
+            delta = cliffs_delta(x, y)
+        comparisons.append(
+            RankComparison(
+                question=question,
+                metric=metric,
+                cell_a=a,
+                cell_b=b,
+                n_a=len(x),
+                n_b=len(y),
+                median_a=float(np.median(x)),
+                iqr_a=float(np.percentile(x, 75) - np.percentile(x, 25)),
+                median_b=float(np.median(y)),
+                iqr_b=float(np.percentile(y, 75) - np.percentile(y, 25)),
+                u_stat=float(u_stat),
+                p_raw=float(p_raw),
+                cliffs_delta=float(delta),
+            )
+        )
+    return comparisons
+
+
+def adjust_family(comparisons: list) -> list:
+    """One Benjamini-Hochberg FDR pass over a whole metric family.
+
+    Works for both Comparison and RankComparison (anything with p_raw/p_adj).
+    """
     if not comparisons:
         return []
     p_raw = [c.p_raw for c in comparisons]
@@ -120,36 +200,62 @@ def adjust_family(comparisons: list[Comparison]) -> list[Comparison]:
 
 
 def kruskal_check(values_by_cell: dict[str, np.ndarray], cells: list[str]):
-    """Distribution-free robustness companion (H statistic, p-value)."""
+    """Distribution-free omnibus companion (H statistic, p-value)."""
     groups = [np.asarray(values_by_cell[c]) for c in cells if c in values_by_cell]
     if len(groups) < 2:
         return None
+    if np.ptp(np.concatenate(groups)) == 0.0:  # all values identical
+        return 0.0, 1.0
     h, p = sps.kruskal(*groups)
     return float(h), float(p)
+
+
+def _sig(c) -> str:
+    return " *" if (c.p_adj is not None and c.p_adj < 0.05) else ""
+
+
+def welch_table_lines(comparisons: list[Comparison]) -> list[str]:
+    lines = [
+        "| question | metric | A | B | mean A (sd) | mean B (sd) "
+        "| t | p raw | p adj (FDR) | Cohen's d |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for c in comparisons:
+        lines.append(
+            f"| {c.question} | {c.metric} | {c.cell_a} | {c.cell_b} "
+            f"| {c.mean_a:.4g} ({c.sd_a:.3g}) | {c.mean_b:.4g} ({c.sd_b:.3g}) "
+            f"| {c.t_stat:.3f} | {c.p_raw:.2e} | {c.p_adj:.2e}{_sig(c)} "
+            f"| {c.cohens_d:.3f} |"
+        )
+    return lines
+
+
+def rank_table_lines(comparisons: list[RankComparison]) -> list[str]:
+    lines = [
+        "| question | metric | A | B | median A (IQR) | median B (IQR) "
+        "| U | p raw | p adj (FDR) | Cliff's delta |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for c in comparisons:
+        lines.append(
+            f"| {c.question} | {c.metric} | {c.cell_a} | {c.cell_b} "
+            f"| {c.median_a:.4g} ({c.iqr_a:.3g}) | {c.median_b:.4g} ({c.iqr_b:.3g}) "
+            f"| {c.u_stat:.1f} | {c.p_raw:.2e} | {c.p_adj:.2e}{_sig(c)} "
+            f"| {c.cliffs_delta:.3f} |"
+        )
+    return lines
 
 
 def format_report(
     families: dict[str, list[Comparison]],
     title: str,
 ) -> str:
-    """Markdown report: descriptives + adjusted planned comparisons."""
+    """Markdown report of Welch planned comparisons (legacy single-track form)."""
     lines = [f"# {title}", ""]
     for family, comparisons in families.items():
         lines.append(f"## Metric family: {family}")
         lines.append("")
-        lines.append(
-            "| question | metric | A | B | mean A (sd) | mean B (sd) "
-            "| t | p raw | p adj (FDR) | Cohen's d |"
-        )
-        lines.append("|---|---|---|---|---|---|---|---|---|---|")
-        for c in comparisons:
-            sig = " *" if (c.p_adj is not None and c.p_adj < 0.05) else ""
-            lines.append(
-                f"| {c.question} | {c.metric} | {c.cell_a} | {c.cell_b} "
-                f"| {c.mean_a:.4g} ({c.sd_a:.3g}) | {c.mean_b:.4g} ({c.sd_b:.3g}) "
-                f"| {c.t_stat:.3f} | {c.p_raw:.2e} | {c.p_adj:.2e}{sig} "
-                f"| {c.cohens_d:.3f} |"
-            )
+        lines += welch_table_lines(comparisons)
         lines.append("")
     lines.append(
         "Cohen's d guide: |d| < 0.2 trivial, 0.2-0.5 small, 0.5-0.8 medium, "

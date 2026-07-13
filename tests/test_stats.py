@@ -1,14 +1,18 @@
-"""Planned comparisons: pair selection, Welch/effect sizes, FDR, report."""
+"""Planned comparisons: pair selection, Welch/rank tracks, FDR, report."""
 
 import numpy as np
 import pytest
 
 from bimo_ik.stats import (
     adjust_family,
+    cliffs_delta,
     cohens_d,
     format_report,
+    kruskal_check,
     planned_pairs,
+    rank_table_lines,
     run_planned_comparisons,
+    run_rank_comparisons,
 )
 
 
@@ -69,6 +73,73 @@ def test_fdr_adjustment_never_decreases_p():
     comparisons = adjust_family(run_planned_comparisons(values, "m"))
     assert all(c.p_adj >= c.p_raw - 1e-12 for c in comparisons)
     assert all(c.p_adj <= 1.0 for c in comparisons)
+
+
+# --- rank-based track (heavy-tailed families) ---------------------------------
+
+def test_cliffs_delta_known_values():
+    assert cliffs_delta([10, 11, 12], [1, 2, 3]) == pytest.approx(1.0)
+    assert cliffs_delta([1, 2, 3], [10, 11, 12]) == pytest.approx(-1.0)
+    assert cliffs_delta([1, 2, 3], [1, 2, 3]) == pytest.approx(0.0)
+    # half the cross-pairs favor x: delta = 0.5
+    assert cliffs_delta([2, 4], [1, 3]) == pytest.approx(0.5)
+
+
+def test_rank_comparisons_detect_location_shift():
+    rng = np.random.default_rng(3)
+    values = {
+        "pso-injection-static": rng.lognormal(0.0, 1.0, 30),        # heavy-tailed
+        "ga-injection-static": rng.lognormal(2.0, 1.0, 30),         # shifted
+    }
+    comparisons = adjust_family(run_rank_comparisons(values, "rmse_pos_mm"))
+    (c,) = comparisons
+    assert c.p_adj < 1e-4
+    assert c.cliffs_delta < -0.6  # A well below B in rank terms
+    assert c.median_a < c.median_b
+
+
+def test_rank_comparisons_degenerate_all_ties():
+    # both cells fully censored at the cap: constant, identical samples
+    values = {
+        "pso-injection-static": np.full(30, 160.0),
+        "ga-injection-static": np.full(30, 160.0),
+    }
+    (c,) = run_rank_comparisons(values, "0.001")
+    assert c.p_raw == 1.0 and c.cliffs_delta == 0.0
+    assert not np.isnan(c.p_raw)
+
+
+def test_rank_comparison_median_iqr_values():
+    x = np.array([1.0, 2.0, 3.0, 4.0, 100.0])  # heavy tail
+    y = np.array([5.0, 6.0, 7.0, 8.0, 9.0])
+    values = {"pso-cold-static": x, "ga-cold-static": y}
+    (c,) = run_rank_comparisons(values, "m")
+    assert c.median_a == pytest.approx(np.median(x))
+    assert c.iqr_a == pytest.approx(np.percentile(x, 75) - np.percentile(x, 25))
+    assert c.median_b == pytest.approx(np.median(y))
+
+
+def test_kruskal_check_degenerate_and_signal():
+    const = {"pso-cold-static": np.ones(10), "pso-injection-static": np.ones(10)}
+    assert kruskal_check(const, list(const)) == (0.0, 1.0)
+    rng = np.random.default_rng(4)
+    shifted = {
+        "pso-cold-static": rng.normal(0, 1, 30),
+        "pso-injection-static": rng.normal(5, 1, 30),
+    }
+    h, p = kruskal_check(shifted, list(shifted))
+    assert p < 1e-6
+
+
+def test_rank_table_renders():
+    rng = np.random.default_rng(5)
+    values = {
+        "pso-injection-static": rng.normal(5, 1, 10),
+        "ga-injection-static": rng.normal(5, 1, 10),
+    }
+    lines = rank_table_lines(adjust_family(run_rank_comparisons(values, "m")))
+    assert "Cliff's delta" in lines[0]
+    assert len(lines) == 3  # header + separator + one pair
 
 
 def test_format_report_smoke():
