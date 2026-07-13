@@ -57,8 +57,15 @@ def solve_ik(
     n_starts: int = 5,
     rng: np.random.Generator | None = None,
     tol: float = 1e-3,
+    include_midpoint: bool = True,
 ) -> IKSolution:
-    """Bounded numerical IK. Returns the best solution over multi-start."""
+    """Bounded numerical IK. Returns the best solution over multi-start.
+
+    `include_midpoint=True` (default) keeps the guard's behavior: the
+    joint-range midpoint is always among the starts. The LM baseline
+    experiment disables it so a single seeded start is exactly the start
+    used (clean cold/warm conditions).
+    """
     rng = np.random.default_rng(0) if rng is None else rng
     l_reach = max_reach()
     target_position = np.asarray(target_position, dtype=float)
@@ -67,7 +74,8 @@ def solve_ik(
     starts: list[np.ndarray] = []
     if q_seed is not None:
         starts.append(np.clip(np.asarray(q_seed, dtype=float), JOINT_LOWER, JOINT_UPPER))
-    starts.append((JOINT_LOWER + JOINT_UPPER) / 2.0)
+    if include_midpoint:
+        starts.append((JOINT_LOWER + JOINT_UPPER) / 2.0)
     while len(starts) < n_starts:
         starts.append(rng.uniform(JOINT_LOWER, JOINT_UPPER))
 

@@ -311,6 +311,39 @@ def fig_weight_schedule(
     return _save(fig, out_dir, "weight_schedule.png")
 
 
+def fig_lm_joint_profiles(
+    q_paths_by_condition: dict[str, np.ndarray],
+    trajectory_name: str,
+    out_dir: Path,
+) -> Path:
+    """Joint profiles of the LM baseline, one panel per memory condition.
+
+    Hue semantics stay consistent with the study's encoding contract:
+    cold = blue, warm (the injection analogue) = aqua.
+    """
+    condition_colors = {"cold": MEMORY_COLORS["cold"],
+                        "warm": MEMORY_COLORS["injection"]}
+    conditions = list(q_paths_by_condition)
+    fig, axes = plt.subplots(
+        1, len(conditions), figsize=(5.8 * len(conditions), 4.2),
+        squeeze=False, sharex=True, sharey=True,
+    )
+    for ax, condition in zip(axes[0], conditions):
+        q_deg = np.degrees(q_paths_by_condition[condition])
+        for j in range(q_deg.shape[1]):
+            ax.plot(q_deg[:, j], lw=2.4, alpha=0.9)
+        ax.set_title(f"LM {condition}", fontsize=14,
+                     color=condition_colors.get(condition, "#0b0b0b"))
+        ax.set_xlabel("trajectory point")
+        _style_axes(ax)
+    axes[0][0].set_ylabel("joint angle (deg)")
+    fig.suptitle(
+        f"Numerical-IK (LM) baseline joint profiles — {trajectory_name}", y=1.02
+    )
+    fig.tight_layout()
+    return _save(fig, out_dir, f"lm_joint_profiles_{trajectory_name}.png")
+
+
 # ---------------------------------------------------------------------------
 
 def make_all_figures(collected: dict, config, out_dir: str | Path) -> list[Path]:
