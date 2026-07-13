@@ -19,7 +19,7 @@ ACCURACY_METRICS = (
     "rmse_ori_rad", "mean_ori_rad", "max_ori_rad",
 )
 KINEMATIC_METRICS = (
-    "smoothness_rad", "smoothness_index", "jerk_rad",
+    "roughness_rad", "roughness_index", "jerk_rad",
     "peak_joint_velocity_rad", "peak_joint_acceleration_rad",
 )
 

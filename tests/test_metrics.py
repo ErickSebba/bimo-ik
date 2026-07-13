@@ -55,8 +55,8 @@ def test_kinematic_summary_on_known_path():
     q_path[1, 0] = 0.1
     q_path[2, 0] = 0.3
     m = kinematic_summary(q_path)
-    assert m["smoothness_rad"] == pytest.approx(0.3)
-    assert m["smoothness_index"] == pytest.approx(0.15)
+    assert m["roughness_rad"] == pytest.approx(0.3)
+    assert m["roughness_index"] == pytest.approx(0.15)
     assert m["jerk_rad"] == pytest.approx(0.1)  # |0.2 - 0.1|
     assert m["peak_joint_velocity_rad"] == pytest.approx(0.2)
     assert m["peak_joint_acceleration_rad"] == pytest.approx(0.1)
@@ -64,7 +64,7 @@ def test_kinematic_summary_on_known_path():
 
 def test_constant_path_has_zero_motion():
     m = kinematic_summary(np.ones((10, 6)))
-    assert m["smoothness_rad"] == 0.0
+    assert m["roughness_rad"] == 0.0
     assert m["jerk_rad"] == 0.0
 
 

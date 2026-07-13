@@ -11,7 +11,7 @@ the old algorithms:
 
 PASS criteria (the old paper's qualitative result):
   1. GA-cold has the lowest mean positional RMSE of the three.
-  2. PSO-persistence smoothness is at least 20x better (old data: ~50x)
+  2. PSO-persistence roughness (sum |dq|) is at least 20x lower (old: ~50x)
      than both cold baselines.
 
 Exact numbers differ by construction (normalized fitness, different RNG);
@@ -59,12 +59,12 @@ def main():
     per_cell = collected["line"]
 
     rmse = metric_matrix(per_cell, "accuracy", "rmse_pos_mm")
-    smooth = metric_matrix(per_cell, "kinematic", "smoothness_rad")
+    smooth = metric_matrix(per_cell, "kinematic", "roughness_rad")
 
     print("\n--- reproduction anchor (mean over 10 runs) ---")
     for cell in rmse:
         print(f"{cell:26s} RMSE={np.mean(rmse[cell]):8.3f} mm   "
-              f"smoothness={np.mean(smooth[cell]):8.2f} rad")
+              f"roughness={np.mean(smooth[cell]):8.2f} rad")
 
     ga_best_rmse = (
         np.mean(rmse["ga-cold-static"]) < np.mean(rmse["pso-cold-static"])
@@ -78,7 +78,7 @@ def main():
     smooth_ok = min(ratio_pso, ratio_ga) >= 20.0
 
     print(f"\nGA-cold beats PSO-cold on mean positional RMSE: {ga_best_rmse}")
-    print(f"persistence smoothness advantage: {ratio_pso:.1f}x vs PSO-cold, "
+    print(f"persistence roughness advantage: {ratio_pso:.1f}x vs PSO-cold, "
           f"{ratio_ga:.1f}x vs GA-cold (need >= 20x)")
     verdict = "PASS" if (ga_best_rmse and smooth_ok) else "FAIL"
     print(f"\n[{verdict}] reproduction anchor")
