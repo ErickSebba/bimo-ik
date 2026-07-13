@@ -105,7 +105,7 @@ def main():
                     "heavy-tailed family)"
                 )
                 lines.append("")
-                lines += rank_table_lines(adjust_family(rank))
+                lines.extend(rank_table_lines(adjust_family(rank)))
                 lines.append("")
                 if kw_lines:
                     lines.append(
@@ -113,11 +113,11 @@ def main():
                         "(cold / injection / persistence, static):"
                     )
                     lines.append("")
-                    lines += kw_lines
+                    lines.extend(kw_lines)
                     lines.append("")
                 lines.append("### Welch t (secondary check)")
                 lines.append("")
-            lines += welch_table_lines(adjust_family(welch))
+            lines.extend(welch_table_lines(adjust_family(welch)))
             lines.append("")
 
         family("accuracy", "accuracy", ACCURACY_METRICS)
