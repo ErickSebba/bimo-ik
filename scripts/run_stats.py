@@ -50,6 +50,8 @@ def main():
     from bimo_ik.stats import (
         adjust_family,
         collect_results,
+        equivalence_analysis,
+        equivalence_section_lines,
         kruskal_check,
         metric_matrix,
         rank_table_lines,
@@ -123,6 +125,20 @@ def main():
         family("computation", "wall_time_s", ("wall_time_s",))
         family("effort", "effort_iterations",
                tuple(float(e) for e in config.report_epsilons))
+
+        # TOST equivalence for the keystone memory-matched algorithm pair.
+        equivalence_results = []
+        for family_key, metric in (
+            ("kinematic", "roughness_rad"),
+            ("kinematic", "jerk_rad"),
+            ("accuracy", "rmse_pos_mm"),
+            ("accuracy", "rmse_ori_rad"),
+        ):
+            values = metric_matrix(per_cell, family_key, metric)
+            result = equivalence_analysis(values, metric)
+            if result is not None:
+                equivalence_results.append(result)
+        lines += equivalence_section_lines(equivalence_results)
 
         lines.append(FOOTER)
         lines.append("")

@@ -5,14 +5,19 @@ import pytest
 
 from bimo_ik.stats import (
     adjust_family,
+    bootstrap_ci,
     cliffs_delta,
     cohens_d,
+    equivalence_analysis,
+    equivalence_section_lines,
     format_report,
     kruskal_check,
+    memory_effect_anchors,
     planned_pairs,
     rank_table_lines,
     run_planned_comparisons,
     run_rank_comparisons,
+    tost_equivalence,
 )
 
 
@@ -140,6 +145,92 @@ def test_rank_table_renders():
     lines = rank_table_lines(adjust_family(run_rank_comparisons(values, "m")))
     assert "Cliff's delta" in lines[0]
     assert len(lines) == 3  # header + separator + one pair
+
+
+# --- TOST equivalence + bootstrap CIs ------------------------------------------
+
+def test_tost_matches_manual_two_one_sided_welch():
+    # verify statsmodels ttost_ind under unequal variances against two
+    # manually composed one-sided Welch tests
+    from statsmodels.stats.weightstats import ttest_ind as sm_ttest
+
+    rng = np.random.default_rng(10)
+    x = rng.normal(0.0, 1.0, 30)
+    y = rng.normal(0.05, 2.0, 30)  # deliberately unequal variances
+    low, high = -0.5, 0.5
+    p, p_lo, p_hi = tost_equivalence(x, y, low, high)
+    _, p_larger, _ = sm_ttest(x, y, alternative="larger", usevar="unequal", value=low)
+    _, p_smaller, _ = sm_ttest(x, y, alternative="smaller", usevar="unequal", value=high)
+    assert p_lo == pytest.approx(p_larger)
+    assert p_hi == pytest.approx(p_smaller)
+    assert p == pytest.approx(max(p_larger, p_smaller))
+
+
+def test_tost_verdicts_track_bound_width():
+    rng = np.random.default_rng(11)
+    x = rng.normal(0.0, 0.1, 30)
+    y = rng.normal(0.0, 0.1, 30)  # genuinely equivalent, tight
+    p_wide, _, _ = tost_equivalence(x, y, -0.5, 0.5)
+    p_tiny, _, _ = tost_equivalence(x, y, -1e-4, 1e-4)
+    assert p_wide < 0.05        # equivalence established under a wide bound
+    assert p_tiny > 0.05        # not establishable under an absurdly tight bound
+
+
+def test_tost_rejects_truly_different_samples():
+    rng = np.random.default_rng(12)
+    x = rng.normal(0.0, 0.1, 30)
+    y = rng.normal(1.0, 0.1, 30)
+    p, _, _ = tost_equivalence(x, y, -0.5, 0.5)  # bound below the true diff
+    assert p > 0.5
+
+
+def test_bootstrap_ci_covers_known_difference():
+    rng = np.random.default_rng(13)
+    x = rng.normal(5.0, 1.0, 60)
+    y = rng.normal(3.0, 1.0, 60)
+    lo, hi = bootstrap_ci(x, y, lambda a, b: float(np.mean(a) - np.mean(b)),
+                          n_resamples=2000, seed=1)
+    assert lo < 2.0 < hi        # covers the true difference
+    assert lo > 0.5             # excludes zero and wildly wrong values
+    # deterministic under a fixed seed
+    assert (lo, hi) == bootstrap_ci(
+        x, y, lambda a, b: float(np.mean(a) - np.mean(b)),
+        n_resamples=2000, seed=1,
+    )
+
+
+def test_memory_effect_anchors_min_mean_pso():
+    values = {
+        "pso-cold-static": np.full(5, 10.0),
+        "pso-injection-static": np.full(5, 4.0),   # PSO effect = 6
+        "ga-cold-static": np.full(5, 8.0),
+        "ga-injection-static": np.full(5, 6.0),    # GA effect = 2
+    }
+    anchors = memory_effect_anchors(values)
+    assert anchors == {"min": 2.0, "mean": 4.0, "pso": 6.0}
+    assert memory_effect_anchors({"pso-cold-static": np.ones(3)}) is None
+
+
+def test_equivalence_analysis_end_to_end():
+    rng = np.random.default_rng(14)
+    # large memory effect, tiny PSO-vs-GA difference under injection
+    values = {
+        "pso-cold-static": rng.normal(100.0, 5.0, 30),
+        "ga-cold-static": rng.normal(90.0, 5.0, 30),
+        "pso-injection-static": rng.normal(4.0, 0.5, 30),
+        "ga-injection-static": rng.normal(4.1, 0.5, 30),
+    }
+    result = equivalence_analysis(values, "roughness_rad", n_resamples=1000, seed=2)
+    assert result is not None
+    assert len(result.rows) == 6  # 3 anchors x 2 fractions
+    # 10% of the min anchor (~86) is ~8.6 >> the 0.1 true difference:
+    by = {(r.anchor, r.fraction): r for r in result.rows}
+    assert by[("min", 0.10)].equivalent
+    assert by[("pso", 0.20)].equivalent
+    # CI on the difference is tight and near zero
+    assert result.ci_diff[0] > -1.0 and result.ci_diff[1] < 1.0
+    lines = equivalence_section_lines([result])
+    assert any("TOST sensitivity" in line for line in lines)
 
 
 def test_format_report_smoke():
