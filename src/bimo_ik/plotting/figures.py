@@ -434,6 +434,113 @@ def fig_lm_joint_profiles(
     return _save(fig, out_dir, f"lm_joint_profiles_{trajectory_name}.png")
 
 
+def load_lm_condition(lm_dir: Path, trajectory: Trajectory, condition: str) -> dict:
+    """LM runs of one condition, shaped like a collect_results cell.
+
+    {"runs": [raw npz dicts], "accuracy": [accuracy_summary]} in manifest seed
+    order, so _best_run picks the same run as run_lm_baseline.py (first
+    minimum of rmse_pos_mm over the seeds, in seed order).
+    """
+    import json
+
+    from ..experiment.engine import load_result
+    from ..metrics import accuracy_summary
+
+    lm_dir = Path(lm_dir)
+    seeds = json.loads((lm_dir / "manifest.json").read_text(encoding="utf-8"))["seeds"]
+    runs = [
+        load_result(lm_dir / f"{trajectory.name}_{condition}_seed{seed:04d}.npz")
+        for seed in seeds
+    ]
+    return {
+        "runs": runs,
+        "accuracy": [accuracy_summary(run["q_path"], trajectory) for run in runs],
+    }
+
+
+# (panel title, source, key): source "pso" indexes per_cell by cell id,
+# "lm" indexes the LM conditions.
+MERGED_PANELS = (
+    ("(a) PSO cold", "pso", "pso-cold-static"),
+    ("(b) PSO injection", "pso", "pso-injection-static"),
+    ("(c) LM cold", "lm", "cold"),
+    ("(d) LM warm", "lm", "warm"),
+)
+
+
+def merged_joint_profile_runs(per_cell: dict, lm_by_condition: dict) -> list[tuple[str, dict]]:
+    """Best run (via _best_run) of each merged-figure panel, in panel order."""
+    sources = {"pso": per_cell, "lm": lm_by_condition}
+    return [(title, _best_run(sources[src][key])) for title, src, key in MERGED_PANELS]
+
+
+def fig_joint_profiles_merged(
+    per_cell: dict, lm_by_condition: dict, trajectory_name: str, out_dir: Path
+) -> Path:
+    """Camera-ready 2x2 joint profiles: PSO cold/injection + LM cold/warm.
+
+    Sized for one IEEEtran column (3.5 x 3.4 in) and saved at that exact size
+    (no bbox_inches="tight") so the point sizes below are the printed sizes.
+    Joint encoding is the same _joint_style + color cycle as the per-figure
+    versions; one shared legend sits above the panels.
+    """
+    panels = merged_joint_profile_runs(per_cell, lm_by_condition)
+    q_degs = [np.degrees(run["q_path"]) for _, run in panels]
+    n_joints = q_degs[0].shape[1]
+
+    lo = min(q.min() for q in q_degs)
+    hi = max(q.max() for q in q_degs)
+    # Common y range over all four panels, padded so markers on extreme
+    # samples (e.g. exactly -180 deg) are not clipped by the axes edge.
+    margin = 0.04 * (hi - lo)
+    ylim = (15.0 * np.floor((lo - margin) / 15.0), 15.0 * np.ceil((hi + margin) / 15.0))
+
+    rc = {
+        "font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8,
+        "xtick.labelsize": 7, "ytick.labelsize": 7, "legend.fontsize": 7,
+        "axes.linewidth": 0.6, "lines.linewidth": 1.0, "lines.markersize": 3,
+        "xtick.major.width": 0.6, "ytick.major.width": 0.6,
+        "xtick.major.size": 2.5, "ytick.major.size": 2.5,
+        "xtick.major.pad": 1.5, "ytick.major.pad": 1.5,
+    }
+    prop_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    with plt.rc_context(rc):
+        fig, axes = plt.subplots(2, 2, figsize=(3.5, 3.4), sharex=True, sharey=True,
+                                 layout="constrained")
+        for ax, (title, _), q_deg in zip(axes.ravel(), panels, q_degs):
+            for j in range(n_joints):
+                jstyle = _joint_style(j)
+                ax.plot(q_deg[:, j], jstyle["linestyle"],
+                        color=prop_colors[j % len(prop_colors)], lw=1.0,
+                        marker=jstyle["marker"], ms=3, markevery=(j % 5 + 1, 6))
+            ax.set_title(title, pad=2)
+            ax.set_ylim(*ylim)
+            ax.set_yticks(np.arange(90.0 * np.ceil(ylim[0] / 90.0), ylim[1] + 1e-9, 90.0))
+            _style_axes(ax)
+        for ax in axes[-1]:
+            ax.set_xlabel("trajectory point", labelpad=1)
+        for row in axes:
+            row[0].set_ylabel("joint angle (deg)", labelpad=1)
+        joint_handles = [
+            plt.Line2D([], [], color=prop_colors[j % len(prop_colors)],
+                       linestyle=_joint_style(j)["linestyle"],
+                       marker=_joint_style(j)["marker"], ms=3, lw=1.0,
+                       label=f"joint {j + 1}")
+            for j in range(n_joints)
+        ]
+        fig.legend(handles=joint_handles, loc="outside upper center", ncol=3,
+                   frameon=False, handlelength=2.6, columnspacing=1.2,
+                   handletextpad=0.4, labelspacing=0.2, borderaxespad=0.1)
+
+        out_dir = Path(out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        path = out_dir / f"joint_profiles_merged_{trajectory_name}.png"
+        fig.savefig(path, dpi=300)
+        fig.savefig(path.with_suffix(".pdf"))
+        plt.close(fig)
+    return path
+
+
 # ---------------------------------------------------------------------------
 
 def make_all_figures(collected: dict, config, out_dir: str | Path) -> list[Path]:
