@@ -1,1 +1,26 @@
+# ambientes e caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# segredos e bancos locais
+.env
+*.sqlite
+*.db
+
+# ferramentas de IA e material de estudo (ficam só no disco)
+.claude/
+CLAUDE.md
+Claude outputs/
+figures.zip
+
+# vídeos explicativos (pesados)
 VideosExplicativos/
+
+# sistema
+.DS_Store
+Thumbs.db
