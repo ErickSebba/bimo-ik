@@ -1,0 +1,25 @@
+{
+  "description": "LM (bounded least-squares) numerical-IK baseline, cold vs warm initial guesses; descriptive only",
+  "reps": 10,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "conditions": [
+    "cold",
+    "warm"
+  ],
+  "trajectories": [
+    "line",
+    "corner"
+  ],
+  "solver": "scipy.optimize.least_squares (trf, bounded), single start, no midpoint start"
+}

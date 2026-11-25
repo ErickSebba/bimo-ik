@@ -1,0 +1,165 @@
+{
+  "created_utc": "2026-07-04T06:06:46.840747+00:00",
+  "config_hash": "e546f0fc78e3a31852422b01cbefec88a82b58cd2cb45e07424afcb72469d253",
+  "config": {
+    "name": "lars-smoke",
+    "cells": [
+      {
+        "algorithm": "pso",
+        "memory": "cold",
+        "landscape": "static"
+      },
+      {
+        "algorithm": "pso",
+        "memory": "injection",
+        "landscape": "static"
+      },
+      {
+        "algorithm": "pso",
+        "memory": "persistence",
+        "landscape": "static"
+      },
+      {
+        "algorithm": "ga",
+        "memory": "cold",
+        "landscape": "static"
+      },
+      {
+        "algorithm": "ga",
+        "memory": "injection",
+        "landscape": "static"
+      }
+    ],
+    "trajectories": [
+      {
+        "name": "line",
+        "kind": "line",
+        "n_points": 10,
+        "start": [
+          150.0,
+          100.0,
+          200.0
+        ],
+        "end": [
+          300.0,
+          -100.0,
+          200.0
+        ],
+        "quat_start": [
+          0.49944473,
+          0.39597488,
+          -0.11377559,
+          0.76211152
+        ],
+        "quat_end": [
+          0.67967554,
+          0.35303507,
+          -0.21238462,
+          0.60687739
+        ],
+        "corner": null
+      },
+      {
+        "name": "corner",
+        "kind": "corner",
+        "n_points": 10,
+        "start": [
+          150.0,
+          100.0,
+          200.0
+        ],
+        "end": [
+          300.0,
+          -100.0,
+          200.0
+        ],
+        "quat_start": [
+          0.49944473,
+          0.39597488,
+          -0.11377559,
+          0.76211152
+        ],
+        "quat_end": [
+          0.67967554,
+          0.35303507,
+          -0.21238462,
+          0.60687739
+        ],
+        "corner": [
+          300.0,
+          100.0,
+          200.0
+        ]
+      }
+    ],
+    "n_runs": 2,
+    "seed_base": 42,
+    "max_iter": 20,
+    "weights": {
+      "w_pos": 1.0,
+      "w_ori": 1.0,
+      "w_joint": 0.1
+    },
+    "pso": {
+      "pop": 40,
+      "inertia": 0.7,
+      "cognitive": 1.5,
+      "social": 1.5,
+      "v_max_frac": 0.2
+    },
+    "ga": {
+      "pop": 40,
+      "n_elite": 2,
+      "crossover_rate": 0.7,
+      "mutation_rate": 0.2,
+      "mutation_sigma": 0.1,
+      "renewal_fraction": 0.2
+    },
+    "injection": {
+      "fraction": 0.25,
+      "sigma": 0.1
+    },
+    "epsilon_values": [
+      0.0001,
+      0.00017783,
+      0.00031623,
+      0.00056234,
+      0.001,
+      0.0017783,
+      0.0031623,
+      0.0056234,
+      0.01,
+      0.017783,
+      0.031623,
+      0.056234,
+      0.1
+    ],
+    "report_epsilons": [
+      0.001,
+      0.01
+    ],
+    "reach_tolerance": 0.001,
+    "initial_posture": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "seed_scheme": "per-run rng = default_rng(SeedSequence([run_seed, crc32(cell_id), crc32(trajectory_name)])); run_seed in [42, 43]",
+  "run_seeds": [
+    42,
+    43
+  ],
+  "library_versions": {
+    "python": "3.14.6",
+    "numpy": "2.5.0",
+    "scipy": "1.18.0",
+    "statsmodels": "0.14.6",
+    "matplotlib": "3.11.0"
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "git_revision": "48d689df36bbab3efc96980249264dd6ab35b280"
+}

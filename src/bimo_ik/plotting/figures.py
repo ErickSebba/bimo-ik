@@ -463,8 +463,8 @@ def load_lm_condition(lm_dir: Path, trajectory: Trajectory, condition: str) -> d
 MERGED_PANELS = (
     ("(a) PSO cold", "pso", "pso-cold-static"),
     ("(b) PSO injection", "pso", "pso-injection-static"),
-    ("(c) LM cold", "lm", "cold"),
-    ("(d) LM warm", "lm", "warm"),
+    ("(c) TRF cold", "lm", "cold"),
+    ("(d) TRF warm", "lm", "warm"),
 )
 
 

@@ -36,7 +36,7 @@ def test_panels_use_the_existing_best_run_selection():
     per_cell, lm = _fake_inputs()
     panels = merged_joint_profile_runs(per_cell, lm)
     assert [t for t, _ in panels] == [
-        "(a) PSO cold", "(b) PSO injection", "(c) LM cold", "(d) LM warm"]
+        "(a) PSO cold", "(b) PSO injection", "(c) TRF cold", "(d) TRF warm"]
     expected = [
         _best_run(per_cell["pso-cold-static"])["q_path"],       # fig_joint_profiles
         _best_run(per_cell["pso-injection-static"])["q_path"],
