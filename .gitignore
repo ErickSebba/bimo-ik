@@ -18,8 +18,16 @@ CLAUDE.md
 Claude outputs/
 figures.zip
 
-# vídeos explicativos (pesados)
+# material de apresentação e estudo (vídeos, animações, figuras didáticas, livros): fica só no disco
 VideosExplicativos/
+media/
+figures/
+docs/
+animation_memory_comparison.py
+scripts/make_linkedin_gif.py
+*.epub
+.codegraph/
+*.egg-info/
 
 # sistema
 .DS_Store
