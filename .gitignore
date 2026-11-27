@@ -32,3 +32,6 @@ scripts/make_linkedin_gif.py
 # sistema
 .DS_Store
 Thumbs.db
+
+# saídas brutas de cada execução (regeneráveis por scripts/run_experiment.py)
+results/**/*.npz

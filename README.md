@@ -6,6 +6,11 @@ seguindo trajetórias de 30 pontos. A pergunta central é se a **memória da pop
 as soluções do ponto anterior da trajetória) explica a suavidade do movimento, ou se é o algoritmo
 em si.
 
+*In English: comparative study of PSO and a genetic algorithm for full-pose inverse kinematics of
+a 6-DOF arm along 30-point trajectories. Seeding each point's population with the previous
+solution ("memory") cuts joint-trajectory roughness by almost two orders of magnitude in both
+algorithms, so the smoothness comes from memory rather than from PSO itself.*
+
 ![Trajetória do efetuador na reta, melhor execução de cada condição](results/lars/figures/trajectory3d_line.png)
 
 ## O que o projeto faz
@@ -40,6 +45,25 @@ outra a cada ponto, enquanto as condições com memória seguem curvas suaves:
 
 ![Ângulo das 6 juntas ao longo da reta, melhor execução de cada condição](results/lars/figures/joint_profiles_line.png)
 
+### Comparação com um método numérico (Levenberg-Marquardt)
+
+Como linha de base, a mesma trajetória foi resolvida com Levenberg-Marquardt (`scripts/run_lm_baseline.py`),
+partindo de um chute aleatório a cada ponto (*cold*) ou da solução do ponto anterior (*warm*). São
+10 execuções por condição, só descritivas (sem teste estatístico contra as metaheurísticas). Medianas
+na reta (`results/lm_baseline/lm_baseline.md` e `results/lars/stats/`):
+
+| Condição | Erro de posição (RMSE, mm) | Rugosidade das juntas (rad) | Tempo por trajetória (s) |
+|---|---:|---:|---:|
+| LM *cold* | 102,6 | 323,9 | 0,39 |
+| LM *warm* | 101,2 | 2,84 | 0,20 |
+| PSO com injeção | 0,60 | 3,42 | 10,6 |
+| AG com injeção | 1,85 | 3,46 | 23,7 |
+
+O LM com *warm start* é cerca de 50 vezes mais rápido e tão suave quanto as metaheurísticas com
+memória, o que confirma que a suavidade vem de partir da solução anterior. Mas ele erra cerca de
+10 cm na posição, enquanto as metaheurísticas com memória ficam abaixo de 2 mm. No canto vivo a diferença se mantém (LM *warm*: 85,7 mm; PSO e AG
+com injeção: 5,4 e 2,8 mm).
+
 ## Como rodar
 
 Requer Python 3.11 ou mais novo.
@@ -62,6 +86,7 @@ python -m venv .venv
 .venv/Scripts/python scripts/sanity_check.py
 
 # figuras e estatística a partir de uma pasta de resultados
+# (os .npz de cada execução não são versionados: rode o experimento correspondente antes)
 .venv/Scripts/python scripts/make_figures.py --results results/lars
 .venv/Scripts/python scripts/run_stats.py --results results/lars
 ```
@@ -77,7 +102,7 @@ python -m venv .venv
 | `src/bimo_ik/experiment/` | matriz de células, execução paralela, manifesto |
 | `src/bimo_ik/metrics/` e `stats/` | precisão, executabilidade cinemática, esforço vs. ε; comparações, FDR, efeito |
 | `scripts/` | execução, estatística, figuras, linha de base Levenberg-Marquardt |
-| `results/` | resultados dos experimentos (`lars`, `full`, `sanity`, `ablation_wj0`, `lm_baseline`), com as figuras geradas em `figures/` de cada pasta |
+| `results/` | resumos dos experimentos (`lars`, `full`, `sanity`, `ablation_wj0`, `lm_baseline`): estatística, manifestos e figuras geradas. Os `.npz` de cada execução ficam fora do repositório e são regenerados por `run_experiment.py` |
 | `reference/` | cópia congelada do código do estudo anterior (só proveniência, nunca importada) |
 | `legacy/` | versões anteriores do estudo, de abril a junho de 2026 |
 
