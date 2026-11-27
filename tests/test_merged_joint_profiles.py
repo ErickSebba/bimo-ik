@@ -61,8 +61,9 @@ def test_renders_headless_at_column_size(tmp_path):
 
 @pytest.mark.skipif(
     not (REPO / "results" / "lars" / "manifest.json").exists()
-    or not (REPO / "results" / "lm_baseline" / "manifest.json").exists(),
-    reason="real results not present",
+    or not (REPO / "results" / "lm_baseline" / "manifest.json").exists()
+    or not any((REPO / "results" / "lars").rglob("*.npz")),
+    reason="real results (.npz runs, not versioned) not present",
 )
 def test_real_data_seeds_match_existing_figures():
     from bimo_ik.config import config_from_manifest
