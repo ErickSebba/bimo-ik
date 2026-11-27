@@ -37,8 +37,9 @@ Um único motor, configurado por arquivo, roda todas as combinações do experim
 Com 30 execuções por condição, a memória (por injeção ou persistência) reduz a **rugosidade da
 trajetória das juntas** em quase duas ordens de grandeza (d de Cohen ≈ 8, p ajustado ≈ 10⁻²⁴).
 A injeção sozinha já dá quase todo o ganho e funciona nos dois algoritmos, então a suavidade vem
-da **memória**, não do PSO. A memória não melhora a precisão de posição: o AG sem memória continua
-com o menor erro.
+da **memória**, não do PSO. A memória também reduz o erro de posição: na reta, a mediana do RMSE
+do PSO cai de 61 mm sem memória para 0,6 mm com injeção, mas a dispersão é grande (um quarto das
+execuções com injeção passa de 30 mm). Sem memória, o AG erra menos que o PSO (48 contra 61 mm).
 
 Nos perfis das juntas abaixo, as condições sem memória (*cold*) saltam de uma configuração para
 outra a cada ponto, enquanto as condições com memória seguem curvas suaves:
